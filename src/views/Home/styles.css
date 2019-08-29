@@ -1,0 +1,12 @@
+.Home {
+  margin-top: 20px;
+  color: var(--tertiarycolor);
+}
+.Home iframe {
+  padding: 0;
+  margin: 0;
+}
+.Home h1 {
+  text-align: center;
+  margin: 0;
+}
