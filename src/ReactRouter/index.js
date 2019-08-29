@@ -1,14 +1,14 @@
-import React, { Component } from "react";
+import React, { Component, lazy } from "react";
 import PropTypes from "prop-types";
 import { connect as reduxConnect } from "react-redux";
 import { withRouter, Route, Switch, Redirect } from "react-router-dom";
 import { RouteMap } from "./routes";
 import Settings from "../views/Settings";
-import Home from "../views/Home";
 import PrivacyPolicy from "../components/PrivacyPolicy";
 import PageNotFound from "../views/PageNotFound";
 import { RouterLinkPush } from "../helpers/routing";
 import "./styles.css";
+const Home = lazy(() => import('../views/Home'))
 
 const mapStateToProps = ({ User }) => ({ User });
 

@@ -199,7 +199,7 @@ class RadiusMap extends PureComponent {
 
     return (
       <div>
-        {this.mapCanLoad() ? (
+        {this.mapCanLoad() && (
           <div
             className="GoogleMapWrapper"
             style={{
@@ -237,8 +237,6 @@ class RadiusMap extends PureComponent {
               <i className="fas fa-map-marker-alt fa-2x" />
             </Button>
           </div>
-        ) : (
-          <h1>Loading...</h1>
         )}
       </div>
     );

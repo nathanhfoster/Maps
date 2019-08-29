@@ -1,10 +1,10 @@
-import React, { PureComponent } from "react";
+import React, { PureComponent, lazy } from "react";
 import { connect as reduxConnect } from "react-redux";
 import PropTypes from "prop-types";
 import { Container, Row, Col } from "reactstrap";
-import RadiusMap from "../../components/RadiusMap";
 import "./styles.css";
 import "./stylesM.css";
+const RadiusMap = lazy(() => import("../../components/RadiusMap"));
 
 const mapStateToProps = ({ User }) => ({ User });
 
