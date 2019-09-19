@@ -1,0 +1,14 @@
+/* Styles for auto complete elements */
+
+.pac-container {
+    z-index: 9999 !important;
+}
+
+.pac-container:after {
+    /* Remove Google Branding */
+    content: none !important;
+}
+
+.pac-item {}
+
+.pac-item .pac-icon {}
