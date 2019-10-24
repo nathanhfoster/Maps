@@ -1,4 +1,4 @@
-export default (map, maps, coords) => {
+const toBounds = (map, maps, coords) => {
   const bounds = new maps.LatLngBounds()
 
   const extendBounds = (lat, lng) => {
@@ -19,3 +19,5 @@ export default (map, maps, coords) => {
 
   map.fitBounds(bounds)
 }
+
+export default toBounds

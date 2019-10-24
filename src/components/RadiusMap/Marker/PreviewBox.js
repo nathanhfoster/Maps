@@ -24,7 +24,7 @@ const previewBoxStyle = {
   backgroundRepeat: 'no-repeat',
   backfaceVisibility: 'hidden',
   WebkitFontSmoothing: 'subpixel-antialiased',
-  zIndex: 100,
+  zIndex: 999,
   backgroundColor: 'white',
   boxShadow:
     '0px 1px 5px 0px 0 2px 4px rgba(0, 0, 0, 0.2), 0 -1px 0px rgba(0, 0, 0, 0.02), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 3px 1px -2px rgba(0, 0, 0, 0.12)'
@@ -54,22 +54,26 @@ const rightColumn = {
   right: 0
 }
 
-const PreviewBox = ({ clientName, siteDescription, score, lastActivity }) => {
-  score = score || 'No score'
+const PreviewBox = ({ $dimensionKey, clientName, siteDescription, score, lastActivity }) => {
   lastActivity = moment(lastActivity).format('MM/DD/YYYY')
   return (
     <div style={previewBoxStyle}>
       <div>{clientName}</div>
       <div>{siteDescription}</div>
       <div style={lineStyle}>
-        <div style={leftColumn}>{score}</div>
-        <div style={rightColumn}>{lastActivity}</div>
+        <div style={leftColumn}>
+          <i>Last activity</i>
+        </div>
+        <div style={rightColumn}>
+          <i>{lastActivity}</i>
+        </div>
       </div>
     </div>
   )
 }
 
 PreviewBox.propTypes = {
+  $dimensionKey: PropTypes.string,
   clientName: PropTypes.string,
   siteDescription: PropTypes.string,
   score: PropTypes.number,

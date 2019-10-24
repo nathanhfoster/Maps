@@ -1,9 +1,8 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 import PropTypes from 'prop-types'
 
 import Marker from '../Marker'
 
-import MarkerGroup from './MarkerGroup'
 import MarkerCounter from './MarkerCounter'
 
 class MarkerCluster extends PureComponent {
@@ -41,30 +40,59 @@ class MarkerCluster extends PureComponent {
   }
 
   getState = props => {
-    const { points } = props
-    this.setState({ clusterFaceMarkers: points.slice(0, 2), points })
+    const { points, $dimensionKey, $hover, hoveredChildKey, zoom } = props
+    const shouldRenderMarkerCounter = points.length > 2
+    const markerCounterValue = points.length - 2
+
+    this.setState({
+      markers: points.slice(0, 2),
+      markerCounterValue,
+      shouldRenderMarkerCounter,
+      $dimensionKey,
+      $hover,
+      hoveredChildKey,
+      zoom
+    })
   }
 
   componentDidUpdate(prevProps, prevState) {}
 
   componentWillUnmount() {}
 
-  renderClusterFaceMarkers = clusterFaceMarkers =>
-    clusterFaceMarkers.map(marker => {
-      const { id, lat, lng } = marker
-      return <Marker key={id} lat={lat} lng={lng} name={id} inGroup />
+  renderMarkers = (markers, hoveredChildKey) => {
+    const { selectSite, setMapCenterBoundsZoom } = this.props
+    const { zoom } = this.state
+    return markers.map(marker => {
+      const { id, ...props } = marker
+      return (
+        <Marker
+          {...props}
+          $dimensionKey={id}
+          $hover={hoveredChildKey === id}
+          selectSite={selectSite}
+          setMapCenterBoundsZoom={setMapCenterBoundsZoom}
+          zoom={zoom}
+          inGroup
+        />
+      )
     })
+  }
 
   render() {
-    const { $dimensionKey, $hover } = this.props
-    const { clusterFaceMarkers, points } = this.state
-    const shouldRenderMarkerCounter = points.length > 2
+    const {
+      markers,
+      markerCounterValue,
+      shouldRenderMarkerCounter,
+      $dimensionKey,
+      $hover,
+      hoveredChildKey
+    } = this.state
 
     return (
-      <MarkerGroup length={points.length} hover={$hover}>
-        {/* {this.renderClusterFaceMarkers(clusterFaceMarkers)} */}
-        {shouldRenderMarkerCounter && <MarkerCounter>+{points.length - 2}</MarkerCounter>}
-      </MarkerGroup>
+      <Fragment>
+        {this.renderMarkers(markers, hoveredChildKey)}
+        {shouldRenderMarkerCounter && <MarkerCounter>+{markerCounterValue}</MarkerCounter>}
+      </Fragment>
     )
   }
 }

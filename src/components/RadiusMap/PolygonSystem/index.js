@@ -1,39 +1,63 @@
 import Polygon from './Polygon'
 
-const PolygonProps = {
-  strokeColor: '#FF0000',
-  strokeOpacity: 0.8,
-  strokeWeight: 2,
-  fillColor: '#FF0000',
-  fillOpacity: 0.35
-}
+import React, { PureComponent } from 'react'
+import PropTypes from 'prop-types'
 
-const testCoordinates = [
-  [
-    { lat: 26.774, lng: -80.19 },
-    { lat: 18.466, lng: -66.118 },
-    { lat: 32.321, lng: -64.757 },
-    { lat: 25.774, lng: -80.19 }
-  ],
-  [
-    { lat: 25.773, lng: -80.18 },
-    { lat: 18.465, lng: -66.117 },
-    { lat: 32.32, lng: -64.756 },
-    { lat: 25.773, lng: -80.18 }
-  ]
-]
+class Polygons extends PureComponent {
+  constructor(props) {
+    super(props)
 
-const getPolygons = coordinates =>
-  coordinates.map(c =>
-    Polygon({
-      ...PolygonProps,
-      paths: c
+    this.state = {}
+  }
+
+  static propTypes = {
+    map: PropTypes.object.isRequired,
+    maps: PropTypes.object.isRequired,
+    coords: PropTypes.array.isRequired
+  }
+
+  static defaultProps = {
+    options: {
+      strokeColor: '#28c679',
+      strokeOpacity: 0.8,
+      strokeWeight: 1,
+      fillColor: '#2aff00'
+    }
+  }
+
+  componentWillMount() {
+    this.getState(this.props)
+  }
+  componentWillUpdate() {}
+
+  componentDidMount() {}
+
+  componentWillReceiveProps(nextProps) {
+    this.getState(nextProps)
+  }
+
+  getState = props => {
+    const { map, maps, coords, shouldRenderPolygons, options } = props
+    const Polygons = this.getPolygons(coords, options)
+    Polygons.forEach(p => {
+      p.setMap(shouldRenderPolygons ? map : null)
+      // p.setEditable(true)
     })
-  )
+    this.setState({ Polygons, shouldRenderPolygons })
+  }
 
-const PolygonSystem = (map, maps, polygonCoordinates) => {
-  const Polygons = getPolygons(polygonCoordinates)
-  return Polygons.forEach(e => e.setMap(map))
+  componentWillUnmount() {}
+
+  getPolygons = (coords, options) =>
+    coords.map(c =>
+      Polygon({
+        ...options,
+        paths: c
+      })
+    )
+
+  render() {
+    return <noscript />
+  }
 }
-
-export default PolygonSystem
+export default Polygons

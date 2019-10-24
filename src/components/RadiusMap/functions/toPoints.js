@@ -8,10 +8,7 @@ const world2Screen = ({ x, y }, zoom) => {
   }
 }
 
-const latLng2World = _ref => {
-  let lat = _ref.lat
-  let lng = _ref.lng
-
+const latLng2World = ({ lat, lng }) => {
   let sin = Math.sin((lat * Math.PI) / 180)
   let x = lng / 360 + 0.5
   let y = 0.5 - (0.25 * Math.log((1 + sin) / (1 - sin))) / Math.PI

@@ -1,15 +1,14 @@
-import React, { Component, cloneElement } from 'react'
+import React, { PureComponent, cloneElement } from 'react'
 import PropTypes from 'prop-types'
 import { render } from 'react-dom'
+import './styles.css'
 
-class MapControl extends Component {
+class MapControl extends PureComponent {
   static propTypes = {
     map: PropTypes.object.isRequired,
-    controlPosition: PropTypes.number
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return !this.props.map && nextProps.map
+    controlPosition: PropTypes.number.isRequired,
+    disabled: PropTypes.bool,
+    children: PropTypes.any.isRequired
   }
 
   componentDidMount() {
@@ -21,21 +20,27 @@ class MapControl extends Component {
   }
 
   componentWillUnmount() {
-    const { props } = this
-    if (!props.map) return
-    const index = props.map.controls[props.controlPosition].getArray().indexOf(this.el)
-    props.map.controls[props.controlPosition].removeAt(index)
+    const { map, controlPosition } = this.props
+    if (!map) return
+    const index = map.controls[controlPosition].getArray().indexOf(this.el)
+    map.controls[controlPosition].removeAt(index)
   }
 
+  renderChildren = (children, props) =>
+    Array.isArray(children)
+      ? children.map(child => cloneElement(child, { ...props }))
+      : cloneElement(children, { ...props })
+
   _render() {
-    const { props } = this
-    if (!props.map || !props.controlPosition) return
+    const { children, controlPosition, ...props } = this.props
+    if (!props.map || !controlPosition) return
     render(
       <div
+        className="mapControl"
         ref={el => {
           if (!this.renderedOnce) {
             this.el = el
-            props.map.controls[props.controlPosition].push(el)
+            props.map.controls[controlPosition].push(el)
           } else if (el && this.el && el !== this.el) {
             this.el.innerHTML = ''
             ;[].slice.call(el.childNodes).forEach(child => this.el.appendChild(child))
@@ -43,7 +48,7 @@ class MapControl extends Component {
           this.renderedOnce = true
         }}
       >
-        {cloneElement(...props.children, { ...this.props })}
+        {this.renderChildren(children, { ...props })}
       </div>,
       document.createElement('div')
     )

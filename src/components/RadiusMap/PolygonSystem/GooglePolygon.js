@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 const GooglePolygon = ({
   paths,
   strokeColor,
@@ -14,6 +16,15 @@ const GooglePolygon = ({
     fillColor,
     fillOpacity
   })
+}
+
+GooglePolygon.propTypes = {
+  paths: PropTypes.arrayOf(PropTypes.object),
+  strokeColor: PropTypes.string,
+  strokeOpacity: PropTypes.number,
+  strokeWeight: PropTypes.number,
+  fillColor: PropTypes.string,
+  fillOpacity: PropTypes.number
 }
 
 export default GooglePolygon

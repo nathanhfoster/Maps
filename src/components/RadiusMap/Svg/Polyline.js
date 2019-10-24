@@ -1,14 +1,17 @@
-import React from 'react'
+import React, { memo } from 'react'
 import PropTypes from 'prop-types'
 import toPoints from '../functions/toPoints'
 
-const Polyline = ({ bounds, coords, options, ptCorner, zoom }) => {
-  ptCorner = ptCorner || toPoints(bounds[0], bounds[1], zoom)
+const Polyline = ({ coords, options, ptCorner, zoom }) => {
+  // console.log('Polyline: ', coords)
   const points = coords
     .map(coord => {
       const ptScreen = toPoints(coord.lat, coord.lng, zoom)
+      // console.log('ptCorner: ', ptCorner)
+      // console.log('ptScreen: ', ptScreen)
       const x = ptScreen.x - ptCorner.x
       const y = ptScreen.y - ptCorner.y
+      // console.log({ x, y })
       return `${x},${y}`
     })
     .join(' ')
@@ -19,9 +22,8 @@ const Polyline = ({ bounds, coords, options, ptCorner, zoom }) => {
 Polyline.propTypes = {
   coords: PropTypes.array,
   ptCorner: PropTypes.object,
-  bounds: PropTypes.array,
   zoom: PropTypes.number,
   options: PropTypes.object
 }
 
-export default Polyline
+export default memo(Polyline)

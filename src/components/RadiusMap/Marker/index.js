@@ -1,15 +1,15 @@
-import React, { PureComponent } from 'react'
+import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import { locationStyle } from './styles'
+import { markerStyle } from './styles'
 
 import PreviewBox from './PreviewBox'
 import Stick from './Stick'
 
-class Marker extends PureComponent {
+class Marker extends Component {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = { zoom: null }
   }
 
   static propTypes = {
@@ -19,7 +19,8 @@ class Marker extends PureComponent {
     $onMouseAllow: PropTypes.func,
     $hover: PropTypes.bool,
     $prerender: PropTypes.bool,
-    boundaries: PropTypes.object,
+    hoveredChildKey: PropTypes.string,
+    boundaries: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.objectOf(PropTypes.number))),
     clientId: PropTypes.string,
     clientName: PropTypes.string,
     engagingContacts: PropTypes.array,
@@ -32,13 +33,37 @@ class Marker extends PureComponent {
     zIndex: PropTypes.number,
     zipcode: PropTypes.string,
     score: PropTypes.string,
-    inGroup: PropTypes.bool
+    acreage: PropTypes.number,
+    boundary: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
+    locations: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)),
+    marketValue: PropTypes.number,
+    parcelNumbers: PropTypes.array,
+    siteType: PropTypes.string,
+    inGroup: PropTypes.bool,
+    selectSite: PropTypes.func.isRequired,
+    setMapCenterBoundsZoom: PropTypes.func.isRequired
   }
 
-  static defaultProps = { inGroup: false }
+  static defaultProps = { inGroup: false, zIndex: 1 }
 
   componentWillMount() {
     this.getState(this.props)
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    const { hoveredChildKey, $hover, zoom } = nextProps
+    const currentHoveredChildKey = this.props.hoveredChildKey
+    const currentDimensionKey = this.props.$dimensionKey
+    const currentHover = this.props.$hover
+    const currentZoom = this.state.zoom
+
+    const mouseHovered = currentDimensionKey == hoveredChildKey || $hover
+
+    const mouseLeft = currentHoveredChildKey != hoveredChildKey || currentHover != $hover
+
+    const zoomChanged = currentZoom !== zoom
+
+    return mouseHovered || mouseLeft || zoomChanged
   }
 
   componentWillUpdate() {}
@@ -57,6 +82,7 @@ class Marker extends PureComponent {
       $hover,
       $onMouseAllow,
       $prerender,
+      hoveredChildKey,
       boundaries,
       clientId,
       clientName,
@@ -70,11 +96,20 @@ class Marker extends PureComponent {
       zIndex,
       zipcode,
       score,
+      acreage,
+      boundary,
+      locations,
+      marketValue,
+      parcelNumbers,
+      siteType,
+      zoom,
       inGroup
     } = props
+
+    const shouldShowPreview = $hover || hoveredChildKey === $dimensionKey
+
     this.setState({
       $dimensionKey,
-      $geoService,
       $getDimensions,
       $hover,
       $onMouseAllow,
@@ -92,7 +127,15 @@ class Marker extends PureComponent {
       zIndex,
       zipcode,
       score,
-      inGroup
+      acreage,
+      boundary,
+      locations,
+      marketValue,
+      parcelNumbers,
+      siteType,
+      inGroup,
+      shouldShowPreview,
+      zoom
     })
   }
 
@@ -101,14 +144,15 @@ class Marker extends PureComponent {
   componentWillUnmount() {}
 
   render() {
+    const { selectSite, setMapCenterBoundsZoom } = this.props
     const {
       $dimensionKey,
-      $geoService,
       $getDimensions,
       $hover,
       $onMouseAllow,
       $prerender,
       boundaries,
+
       clientId,
       clientName,
       engagingContacts,
@@ -121,15 +165,21 @@ class Marker extends PureComponent {
       zIndex,
       zipcode,
       score,
-      inGroup
+      acreage,
+      boundary,
+      locations,
+      marketValue,
+      parcelNumbers,
+      siteType,
+      inGroup,
+      shouldShowPreview,
+      zoom
     } = this.state
 
     const style = {
-      ...locationStyle,
+      ...markerStyle,
       zIndex: $hover ? 1000 : zIndex
     }
-
-    const shouldShowPreview = $hover && clientName != 'Me'
 
     const ComponentProps = {
       $dimensionKey,
@@ -137,7 +187,12 @@ class Marker extends PureComponent {
       siteDescription,
       score,
       lastActivity,
-      shouldShowPreview
+      shouldShowPreview,
+      inGroup,
+      center: [lat, lng],
+      selectSite,
+      setMapCenterBoundsZoom,
+      zoom
     }
 
     return (

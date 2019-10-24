@@ -12,31 +12,52 @@ class Svg extends PureComponent {
   }
 
   static propTypes = {
-    $dimensionKey: PropTypes.number,
+    $dimensionKey: PropTypes.string,
     $geoService: PropTypes.object,
     $getDimensions: PropTypes.func,
     $hover: PropTypes.bool,
     $onMouseAllow: PropTypes.func,
     $prerender: PropTypes.bool,
-    bounds: PropTypes.array,
-    coordinates: PropTypes.array,
-    options: PropTypes.object,
-    zoom: PropTypes.number
+    bounds: PropTypes.objectOf(PropTypes.objectOf(PropTypes.number)),
+    coords: PropTypes.array,
+    options: PropTypes.objectOf(PropTypes.any),
+    zoom: PropTypes.number,
+    zIndex: PropTypes.number,
+
+    clientId: PropTypes.string,
+    clientName: PropTypes.string,
+    engagingContacts: PropTypes.array,
+
+    lastActivity: PropTypes.string,
+    lat: PropTypes.number,
+    lng: PropTypes.number,
+    name: PropTypes.string,
+    siteDescription: PropTypes.string,
+    state: PropTypes.string,
+    height: PropTypes.any,
+    width: PropTypes.any,
+    zipcode: PropTypes.string,
+    _score: PropTypes.number,
+
+    _attached: PropTypes.bool,
+    _id: PropTypes.number,
+    _selected: PropTypes.bool
   }
 
   static defaultProps = {
+    _attached: false,
+    _id: null,
+    _selected: false,
     height: 0,
     width: 0,
     zoom: 0,
+    zIndex: 1,
     options: {
       strokeWidth: 1,
-      stroke: '#28c679',
-      strokeOpacity: '0.8',
-      fill: '#2aff00',
-      fillOpacity: '0.3',
-      onMouseEnter: e => {},
-      onMouseLeave: e => {},
-      onClick: () => {}
+      stroke: '#c0392b',
+      strokeOpacity: 0.8,
+      fill: '#e74c3c',
+      fillOpacity: 0.3
     }
   }
 
@@ -53,7 +74,7 @@ class Svg extends PureComponent {
   }
 
   getState = props => {
-    let { height, width, zoom } = props
+    let { height, width, zoom, bounds } = props
     const {
       $dimensionKey,
       $geoService,
@@ -61,10 +82,30 @@ class Svg extends PureComponent {
       $hover,
       $onMouseAllow,
       $prerender,
-      bounds,
-      coordinates,
-      options
+      clientId,
+      clientName,
+      coords,
+      engagingContacts,
+      lastActivity,
+      lat,
+      lng,
+      name,
+      siteDescription,
+      state,
+      zipcode,
+      _score,
+      _attached,
+      _selected
     } = props
+
+    const options = this.getOptions(props)
+
+    bounds = Object.keys(bounds)
+      .map(key => {
+        const { lat, lng } = bounds[key]
+        return [lat, lng]
+      })
+      .flat(1)
 
     if ($geoService) {
       height = $geoService.getHeight()
@@ -72,17 +113,67 @@ class Svg extends PureComponent {
       zoom = $geoService.getZoom()
     }
 
-    this.setState({ bounds, coords: coordinates, options, height, width, zoom })
+    this.setState({
+      $dimensionKey,
+      bounds,
+      coords,
+      height,
+      width,
+      zoom,
+      clientName,
+      siteDescription,
+      _score,
+      lastActivity,
+      options
+    })
+  }
+
+  getOptions = ({
+    $dimensionKey,
+    $hover,
+    options,
+    _attached,
+    _selected,
+    hoveredChildKey,
+    $onMouseAllow
+  }) => {
+    const newOptions = { ...options }
+
+    if (_selected) {
+      newOptions.stroke = '#fed330'
+      newOptions.strokeWidth = 2
+      newOptions.strokeOpacity = 1
+      newOptions.fill = '#fdcb6e'
+      newOptions.fillOpacity = 0.3
+    }
+
+    if (_attached) {
+      newOptions.stroke = '#28c679'
+      newOptions.strokeWidth = 1
+      newOptions.strokeOpacity = 0.8
+      newOptions.fill = '#2aff00'
+      newOptions.fillOpacity = 0.3
+    }
+
+    if ($dimensionKey && $dimensionKey === hoveredChildKey) {
+      newOptions.fillOpacity = 0.6
+    }
+
+    return {
+      ...newOptions,
+      onMouseEnter: () => this.toggleMouseMove(true),
+      onMouseLeave: () => this.toggleMouseMove(false)
+    }
   }
 
   drawChildenCoords = ({ bounds, coords, options, zoom }) => {
     const ptCorner = toPoints(bounds[0], bounds[1], zoom)
+    //console.log(ptCorner)
 
     if (coords[0].hasOwnProperty('lat') && coords[0].hasOwnProperty('lng')) {
       return (
         <Polyline
           key={coords[0].lat + coords[0].lng}
-          bounds={bounds}
           coords={coords}
           ptCorner={ptCorner}
           zoom={zoom}
@@ -91,19 +182,12 @@ class Svg extends PureComponent {
       )
     }
 
-    var children = []
+    let children = []
     for (let i = 0; i < coords.length; i++) {
       if (Array.isArray(coords[i])) {
         if (Array.isArray(coords[i][0])) {
           children.push(
-            <Group
-              key={i}
-              bounds={bounds}
-              coords={coords[i]}
-              ptCorner={ptCorner}
-              zoom={zoom}
-              options={options}
-            />
+            <Group key={i} coords={coords[i]} ptCorner={ptCorner} zoom={zoom} options={options} />
           )
         } else {
           children.push(this.drawChildenCoords({ bounds, coords: coords[i], options, zoom }))
@@ -113,15 +197,39 @@ class Svg extends PureComponent {
     return children
   }
 
+  toggleMouseMove = toggle => {
+    const { $onMouseAllow } = this.props
+    if ($onMouseAllow) $onMouseAllow(toggle)
+  }
+
   render() {
-    const { bounds, coords, options, height, width, zoom } = this.state
+    const { zIndex, $onMouseAllow } = this.props
+    const {
+      $dimensionKey,
+      $hover,
+      bounds,
+      coords,
+      options,
+      height,
+      width,
+      zoom,
+      clientName,
+      siteDescription,
+      _score,
+      lastActivity
+    } = this.state
 
     if (coords.length === 0) {
       return null
     }
 
     return (
-      <svg height={height} width={width}>
+      <svg
+        height={height}
+        width={width}
+        onMouseEnter={() => this.toggleMouseMove(false)}
+        onMouseLeave={() => this.toggleMouseMove(true)}
+      >
         {this.drawChildenCoords({ bounds, coords, options, zoom })}
       </svg>
     )
